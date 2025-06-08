@@ -102,12 +102,14 @@ import { Socio, SocioCreateRequest, SocioResponse, SociosListResponse } from '..
                 type="submit"
                 class="btn btn-primary"
                 [disabled]="socioForm.invalid || cargando">
+                <i class="bi bi-person-plus-fill me-2"></i>
                 {{ cargando ? 'Guardando...' : 'Guardar Socio' }}
               </button>
               <button
                 type="button"
                 class="btn"
                 (click)="limpiarFormulario()">
+                <i class="bi bi-arrow-clockwise me-2"></i>
                 Limpiar
               </button>
             </div>
@@ -116,10 +118,12 @@ import { Socio, SocioCreateRequest, SocioResponse, SociosListResponse } from '..
 
         <!-- Mensajes de estado -->
         <div *ngIf="mensaje" class="alert alert-success">
+          <i class="bi bi-check-circle-fill me-2"></i>
           {{ mensaje }}
         </div>
 
         <div *ngIf="error" class="alert alert-error">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
           {{ error }}
         </div>
       </div>
@@ -138,13 +142,17 @@ import { Socio, SocioCreateRequest, SocioResponse, SociosListResponse } from '..
             class="btn btn-success"
             (click)="cargarSocios()"
             [disabled]="cargando">
+            <i class="bi bi-arrow-repeat me-2"></i>
             {{ cargando ? 'Cargando...' : 'Actualizar Lista de Socios' }}
           </button>
         </div>
 
         <!-- Lista de socios con borde negro grueso - Cuadrícula -->
         <div *ngIf="socios.length > 0" class="mt-2 black-border-container compact">
-          <h3 class="section-title">Total de Socios ({{ socios.length }})</h3>
+          <h3 class="section-title">
+            <i class="bi bi-people-fill me-2"></i>
+            Total de Socios ({{ socios.length }})
+          </h3>
           <div class="socios-grid">
             <div *ngFor="let socio of socios" class="socio-card compact">
               <div class="socio-header">
@@ -155,21 +163,42 @@ import { Socio, SocioCreateRequest, SocioResponse, SociosListResponse } from '..
                   onerror="this.src='https://via.placeholder.com/60x60/cccccc/000000?text=No+Img'">
                 <div class="socio-info">
                   <h4 class="socio-name">{{ socio.nombre }} {{ socio.apellido }}</h4>
-                  <p class="socio-detail">Socio Nº {{ socio.numeroSocio }}</p>
+                  <p class="socio-detail">
+                    <i class="bi bi-person-badge me-1"></i>
+                    Socio Nº {{ socio.numeroSocio }}
+                  </p>
                 </div>
               </div>
 
               <div class="socio-details">
                 <div class="detail-row">
-                  <span class="detail-label">DNI:</span>
+                  <span class="detail-label">
+                    <i class="bi bi-card-text me-1"></i>
+                    DNI:
+                  </span>
                   <span class="detail-value">{{ socio.dni }}</span>
                 </div>
                 <div class="detail-row">
-                  <span class="detail-label">Estado:</span>
+                  <span class="detail-label">
+                    <i class="bi bi-circle-fill me-1" [class]="socio.activo ? 'text-success' : 'text-danger'"></i>
+                    Estado:
+                  </span>
                   <span class="status-badge" [class]="socio.activo ? 'status-active' : 'status-inactive'">
                     {{ socio.activo ? 'Activo' : 'Inactivo' }}
                   </span>
                 </div>
+              </div>
+
+              <!-- Botones de acción -->
+              <div class="socio-actions">
+                <button
+                  class="btn btn-danger btn-sm"
+                  (click)="eliminarSocio(socio._id!, socio.nombre, socio.apellido)"
+                  [disabled]="cargando"
+                  title="Eliminar socio">
+                  <i class="bi bi-trash-fill"></i>
+                  Eliminar
+                </button>
               </div>
             </div>
           </div>
@@ -177,6 +206,7 @@ import { Socio, SocioCreateRequest, SocioResponse, SociosListResponse } from '..
 
         <!-- Estado vacío -->
         <div *ngIf="socios.length === 0 && !cargando" class="empty-state mt-2">
+          <i class="bi bi-person-x display-1 text-muted mb-3"></i>
           <p>No hay socios registrados. Agrega el primer socio usando el formulario.</p>
         </div>
       </div>
@@ -298,6 +328,54 @@ import { Socio, SocioCreateRequest, SocioResponse, SociosListResponse } from '..
       margin-top: auto;
     }
 
+    .socio-actions {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 2px solid #eee;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-sm {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.875rem;
+      border-radius: 4px;
+    }
+
+    .text-success {
+      color: #28a745 !important;
+    }
+
+    .text-danger {
+      color: #dc3545 !important;
+    }
+
+    .text-muted {
+      color: #6c757d !important;
+    }
+
+    .display-1 {
+      font-size: 6rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #6c757d;
+    }
+
+    .me-1 {
+      margin-right: 0.25rem !important;
+    }
+
+    .me-2 {
+      margin-right: 0.5rem !important;
+    }
+
+    .mb-3 {
+      margin-bottom: 1rem !important;
+    }
+
     @media (max-width: 576px) {
       .socios-grid {
         grid-template-columns: 1fr;
@@ -351,6 +429,32 @@ export class SociosComponent implements OnInit {
     try {
       const respuesta: SociosListResponse = await this.sociosService.obtenerSocios();
       this.socios = respuesta.socios;
+
+    } catch (error: any) {
+      this.error = error.message;
+    } finally {
+      this.cargando = false;
+    }
+  }
+
+  async eliminarSocio(id: string, nombre: string, apellido: string): Promise<void> {
+    const confirmacion = confirm(`¿Está seguro de que desea eliminar al socio ${nombre} ${apellido}?\n\nEsta acción no se puede deshacer.`);
+
+    if (!confirmacion) {
+      return;
+    }
+
+    this.cargando = true;
+    this.mensaje = '';
+    this.error = '';
+
+    try {
+      const respuesta: SocioResponse = await this.sociosService.eliminarSocio(id);
+
+      this.mensaje = `Socio eliminado exitosamente: ${nombre} ${apellido}`;
+
+      // Recargar la lista de socios
+      await this.cargarSocios();
 
     } catch (error: any) {
       this.error = error.message;
