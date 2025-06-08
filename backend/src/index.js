@@ -6,6 +6,7 @@ const connectDB = require('./config/database');
 const sociosRoutes = require('./routes/socios');
 const transaccionesRoutes = require('./routes/transacciones');
 const empleadosRoutes = require('./routes/empleados');
+const publicacionesRoutes = require('./routes/publicaciones');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/socios', sociosRoutes);
 app.use('/api/transacciones', transaccionesRoutes);
 app.use('/api/empleados', empleadosRoutes);
+app.use('/api/publicaciones', publicacionesRoutes);
 
 //-------------------------
 // Ruta base
@@ -55,6 +57,9 @@ app.get('/api', (req, res) => {
         getAll: 'GET /api/empleados - Obtener todos los empleados',
         getById: 'GET /api/empleados/:id - Obtener un empleado por ID',
         create: 'POST /api/empleados - Dar de alta un empleado'
+      },
+      publicaciones: {
+        create: 'POST /api/publicaciones - Dar de alta una publicación'
       }
     }
   });
