@@ -4,11 +4,10 @@ import { RouterModule } from '@angular/router';
 import { SociosComponent } from './socios.component';
 
 @NgModule({
-  declarations: [
-    SociosComponent
-  ],
+  declarations: [],
   imports: [
     CommonModule,
+    SociosComponent,
     RouterModule.forChild([
       { path: '', component: SociosComponent }
     ])

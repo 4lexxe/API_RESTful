@@ -1,40 +1,49 @@
 import { Component, OnInit } from '@angular/core';
-import { SocioService } from 'src/app/services/socio.service';
+import { SociosService } from '../../services/socios.service';
+import { Socio, SociosListResponse } from '../../models/socio.interface';
 
 @Component({
   selector: 'app-socio',
   templateUrl: './socio.component.html',
-  styleUrls: ['./socio.component.css']
+  styles: []
 })
 export class SocioComponent implements OnInit {
 
-  socios: any[] = [];
+  socios: Socio[] = [];
+  cargando = false;
+  error = '';
 
-  constructor(private socioService: SocioService) { }
+  // Usar el servicio consolidado
+  constructor(private sociosService: SociosService) { }
 
   ngOnInit(): void {
     this.getSocios();
   }
 
-  getSocios() {
-    this.socioService.getSocios()
-      .subscribe(
-        res => {
-          this.socios = res;
-        },
-        err => console.error(err)
-      );
+  async getSocios(): Promise<void> {
+    this.cargando = true;
+    this.error = '';
+
+    try {
+      const respuesta: SociosListResponse = await this.sociosService.obtenerSocios();
+      this.socios = respuesta.socios;
+    } catch (error: any) {
+      this.error = error.message;
+      console.error('Error cargando socios:', error);
+    } finally {
+      this.cargando = false;
+    }
   }
 
-  deleteSocio(id: string) {
+  async deleteSocio(id: string): Promise<void> {
     if (confirm('¿Está seguro de que desea eliminar este socio?')) {
-      this.socioService.deleteSocio(id)
-        .subscribe(
-          res => {
-            this.getSocios(); // Actualizar la lista después de eliminar
-          },
-          err => console.error(err)
-        );
+      try {
+        await this.sociosService.eliminarSocio(id);
+        await this.getSocios(); // Actualizar la lista después de eliminar
+      } catch (error: any) {
+        this.error = error.message;
+        console.error('Error eliminando socio:', error);
+      }
     }
   }
 }

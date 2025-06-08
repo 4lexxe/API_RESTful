@@ -17,7 +17,11 @@ export class SociosService {
   constructor() { }
 
   //-------------------------
-  // POST /api/socios - Dar de alta un socio
+  // CRUD COMPLETO DE SOCIOS
+  //-------------------------
+
+  //-------------------------
+  // CREATE - POST /api/socios - Dar de alta un socio
   //-------------------------
   async crearSocio(socio: SocioCreateRequest): Promise<SocioResponse> {
     try {
@@ -30,7 +34,7 @@ export class SociosService {
   }
 
   //-------------------------
-  // GET /api/socios - Obtener todos los socios
+  // READ - GET /api/socios - Obtener todos los socios
   //-------------------------
   async obtenerSocios(params?: {
     activo?: boolean;
@@ -49,7 +53,37 @@ export class SociosService {
   }
 
   //-------------------------
-  // PUT /api/socios/:id - Actualizar socio
+  // READ ACTIVOS - GET /api/socios?activo=true - Obtener solo socios activos
+  //-------------------------
+  async obtenerSociosActivos(): Promise<SociosListResponse> {
+    try {
+      const response = await apiClient.get<SociosListResponse>(this.endpoint, {
+        params: { activo: true }
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Error obteniendo socios activos:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  //-------------------------
+  // READ INACTIVOS - GET /api/socios?activo=false - Obtener solo socios inactivos
+  //-------------------------
+  async obtenerSociosInactivos(): Promise<SociosListResponse> {
+    try {
+      const response = await apiClient.get<SociosListResponse>(this.endpoint, {
+        params: { activo: false }
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Error obteniendo socios inactivos:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  //-------------------------
+  // UPDATE - PUT /api/socios/:id - Actualizar socio
   //-------------------------
   async actualizarSocio(id: string, socio: SocioCreateRequest): Promise<SocioResponse> {
     try {
@@ -62,7 +96,7 @@ export class SociosService {
   }
 
   //-------------------------
-  // DELETE /api/socios/:id - Eliminar socio
+  // DELETE - DELETE /api/socios/:id - Eliminar socio
   //-------------------------
   async eliminarSocio(id: string): Promise<SocioResponse> {
     try {
@@ -75,16 +109,29 @@ export class SociosService {
   }
 
   //-------------------------
-  // Manejo de errores centralizado
+  // GET BY ID - GET /api/socios/:id - Obtener un socio específico (opcional)
+  //-------------------------
+  async obtenerSocioPorId(id: string): Promise<SocioResponse> {
+    try {
+      const response = await apiClient.get<SocioResponse>(`${this.endpoint}/${id}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error obteniendo socio por ID:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  //-------------------------
+  // Manejo de errores centralizado y consistente
   //-------------------------
   private handleError(error: any): Error {
     if (error.response) {
-      // Error de respuesta del servidor
+      // Error de respuesta del servidor (4xx, 5xx)
       const apiError = error.response.data;
       return new Error(apiError.message || 'Error en el servidor');
     } else if (error.request) {
       // Error de red o conexión
-      return new Error('No se pudo conectar con el servidor');
+      return new Error('No se pudo conectar con el servidor. Verifique su conexión.');
     } else {
       // Otro tipo de error
       return new Error(error.message || 'Error desconocido');

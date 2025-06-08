@@ -1,0 +1,252 @@
+<div class="main-container socios-container">
+  <!-- PRIMER CONTENEDOR: Formulario de creación/edición -->
+  <div class="card main-card">
+    <h1 class="title">{{ modoEdicion ? 'Editar Socio' : 'Registro de Socios' }}</h1>
+    <p>{{ modoEdicion ? 'Formulario para modificar datos del socio seleccionado.' : 'Formulario para dar de alta nuevos socios del club.' }}</p>
+
+    <div class="black-border-container compact">
+      <h3 class="form-section-title">
+        <i class="bi me-2" [class]="modoEdicion ? 'bi-pencil-square' : 'bi-person-plus'"></i>
+        {{ modoEdicion ? 'Modificar Socio' : 'Agregar Nuevo Socio' }}
+      </h3>
+
+      <!-- Información del socio en edición -->
+      <div *ngIf="modoEdicion" class="edit-info-banner">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        <span>Editando: <strong>{{ socioEditando?.nombre }} {{ socioEditando?.apellido }}</strong> (Socio Nº {{ socioEditando?.numeroSocio }})</span>
+      </div>
+
+      <form (ngSubmit)="onSubmitForm()" #socioForm="ngForm">
+        <div class="grid-2">
+          <div class="input-group">
+            <label class="input-label">Nombre</label>
+            <input
+              type="text"
+              class="form-input"
+              [(ngModel)]="nuevoSocio.nombre"
+              name="nombre"
+              required
+              minlength="2"
+              maxlength="50"
+              placeholder="Ingrese el nombre"
+              #nombre="ngModel">
+            <div *ngIf="nombre.invalid && nombre.touched" class="input-error">
+              El nombre es requerido (2-50 caracteres)
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Apellido</label>
+            <input
+              type="text"
+              class="form-input"
+              [(ngModel)]="nuevoSocio.apellido"
+              name="apellido"
+              required
+              minlength="2"
+              maxlength="50"
+              placeholder="Ingrese el apellido"
+              #apellido="ngModel">
+            <div *ngIf="apellido.invalid && apellido.touched" class="input-error">
+              El apellido es requerido (2-50 caracteres)
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">DNI</label>
+            <input
+              type="text"
+              class="form-input"
+              [(ngModel)]="nuevoSocio.dni"
+              name="dni"
+              required
+              pattern="[0-9]{7,8}"
+              placeholder="12345678"
+              #dni="ngModel">
+            <div *ngIf="dni.invalid && dni.touched" class="input-error">
+              El DNI debe tener 7 u 8 dígitos
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Foto URL</label>
+            <input
+              type="url"
+              class="form-input"
+              [(ngModel)]="nuevoSocio.foto"
+              name="foto"
+              required
+              placeholder="https://ejemplo.com/foto.jpg"
+              #foto="ngModel">
+            <div *ngIf="foto.invalid && foto.touched" class="input-error">
+              La URL de la foto es requerida
+            </div>
+          </div>
+        </div>
+
+        <div class="checkbox-group compact">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              class="checkbox-input"
+              [(ngModel)]="nuevoSocio.activo"
+              name="activo">
+            <span>Socio Activo</span>
+          </label>
+        </div>
+
+        <div class="form-actions mt-1">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="socioForm.invalid || cargando">
+            <i class="bi me-2" [class]="modoEdicion ? 'bi-check-circle-fill' : 'bi-person-plus-fill'"></i>
+            {{ getSubmitButtonText() }}
+          </button>
+
+          <button
+            type="button"
+            class="btn"
+            (click)="limpiarFormulario()">
+            <i class="bi bi-arrow-clockwise me-2"></i>
+            {{ modoEdicion ? 'Cancelar Edición' : 'Limpiar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Mensajes de estado -->
+    <div *ngIf="mensaje" class="alert alert-success">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      {{ mensaje }}
+    </div>
+
+    <div *ngIf="error" class="alert alert-error">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {{ error }}
+    </div>
+  </div>
+
+  <!-- SEPARACIÓN VISUAL entre contenedores -->
+  <div class="container-separator"></div>
+
+  <!-- SEGUNDO CONTENEDOR: Listado de socios separado -->
+  <div class="card main-card">
+    <h1 class="title">Listado de Socios</h1>
+    <p>Administración y visualización de socios registrados en el sistema.</p>
+
+    <!-- Botones de acción y filtros -->
+    <div class="form-actions">
+      <button
+        class="btn btn-success me-2"
+        (click)="cargarSocios()"
+        [disabled]="cargando">
+        <i class="bi bi-arrow-repeat me-2"></i>
+        {{ getLoadButtonText('todos') }}
+      </button>
+
+      <button
+        class="btn btn-primary me-2"
+        (click)="cargarSociosActivos()"
+        [disabled]="cargando"
+        [class.active]="filtroActivo === 'activos'">
+        <i class="bi bi-person-check-fill me-2"></i>
+        {{ getLoadButtonText('activos') }}
+      </button>
+
+      <button
+        class="btn btn-secondary"
+        (click)="cargarSociosInactivos()"
+        [disabled]="cargando"
+        [class.active]="filtroActivo === 'inactivos'">
+        <i class="bi bi-person-x-fill me-2"></i>
+        {{ getLoadButtonText('inactivos') }}
+      </button>
+    </div>
+
+    <!-- Indicador de filtro aplicado -->
+    <div *ngIf="filtroActivo !== 'todos'" class="filter-indicator">
+      <i class="bi bi-funnel-fill me-2"></i>
+      <span>Mostrando: <strong>{{ getFiltroTexto() }}</strong></span>
+      <button class="btn btn-link btn-sm ms-2" (click)="limpiarFiltro()">
+        <i class="bi bi-x-circle me-1"></i>
+        Quitar filtro
+      </button>
+    </div>
+
+    <!-- Lista de socios con borde negro grueso - Cuadrícula -->
+    <div *ngIf="socios.length > 0" class="mt-2 black-border-container compact">
+      <h3 class="section-title">
+        <i class="bi bi-people-fill me-2"></i>
+        {{ getTituloListado() }} ({{ socios.length }})
+      </h3>
+      <div class="socios-grid">
+        <div *ngFor="let socio of socios"
+             class="socio-card compact"
+             [class.editing]="esSocioEditando(socio._id)">
+
+          <div class="socio-header">
+            <img
+              [src]="socio.foto"
+              [alt]="socio.nombre"
+              class="socio-avatar"
+              onerror="this.src='https://via.placeholder.com/60x60/cccccc/000000?text=No+Img'">
+            <div class="socio-info">
+              <h4 class="socio-name">{{ socio.nombre }} {{ socio.apellido }}</h4>
+              <p class="socio-detail">
+                <i class="bi bi-person-badge me-1"></i>
+                Socio Nº {{ socio.numeroSocio }}
+              </p>
+            </div>
+          </div>
+
+          <div class="socio-details">
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="bi bi-card-text me-1"></i>
+                DNI:
+              </span>
+              <span class="detail-value">{{ socio.dni }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="bi bi-circle-fill me-1" [class]="socio.activo ? 'text-success' : 'text-danger'"></i>
+                Estado:
+              </span>
+              <span class="status-badge" [class]="socio.activo ? 'status-active' : 'status-inactive'">
+                {{ socio.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="socio-actions">
+            <button
+              class="btn btn-warning btn-sm me-2"
+              (click)="editarSocio(socio)"
+              [disabled]="cargando"
+              title="Editar socio">
+              <i class="bi bi-pencil-fill"></i>
+              Editar
+            </button>
+
+            <button
+              class="btn btn-danger btn-sm"
+              (click)="eliminarSocio(socio._id!, socio.nombre, socio.apellido)"
+              [disabled]="cargando"
+              title="Eliminar socio">
+              <i class="bi bi-trash-fill"></i>
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div *ngIf="socios.length === 0 && !cargando" class="empty-state mt-2">
+      <i class="bi bi-person-x display-1 text-muted mb-3"></i>
+      <p>{{ getMensajeVacio() }}</p>
+    </div>
+  </div>
+</div>
