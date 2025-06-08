@@ -170,16 +170,24 @@
   .app-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    min-height: 100vh;
+    padding-top: 70px; /* Espacio fijo para el navbar */
   }
 
   .navbar {
+    position: fixed; /* Navbar fijo en la parte superior */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #ffffff;
+    border-bottom: 4px solid #000000;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #f8f9fa;
     padding: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: 70px; /* Altura fija del navbar */
   }
 
   .nav-brand h2 {
@@ -211,6 +219,15 @@
     flex: 1;
     padding: 1rem;
     background-color: #ffffff;
+    padding-top: 20px; /* Espacio después de la barra de navegación */
+    position: relative;
+    z-index: 1;
+  }
+
+  .content-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 20px; /* Espacio superior adicional */
   }
 </style>
 
@@ -242,6 +259,9 @@
   </nav>
 
   <main class="main-content">
-    <router-outlet></router-outlet>
+    <!-- Contenedor centrado para router outlet -->
+    <div class="content-container">
+      <router-outlet></router-outlet>
+    </div>
   </main>
 </div>
