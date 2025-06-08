@@ -53,6 +53,7 @@ app.get('/api', (req, res) => {
       },
       empleados: {
         getAll: 'GET /api/empleados - Obtener todos los empleados',
+        getById: 'GET /api/empleados/:id - Obtener un empleado por ID',
         create: 'POST /api/empleados - Dar de alta un empleado'
       }
     }

@@ -58,6 +58,40 @@ router.get('/', async (req, res) => {
 });
 
 //-------------------------
+// GET /api/empleados/:id - Obtener UN empleado por ID
+//-------------------------
+router.get('/:id', async (req, res) => {
+  try {
+    const empleado = await Empleado.findById(req.params.id);
+    
+    if (!empleado) {
+      return res.status(404).json({
+        error: 'Empleado no encontrado',
+        message: `No existe un empleado con el ID ${req.params.id}`
+      });
+    }
+    
+    res.json({
+      message: 'Empleado encontrado exitosamente',
+      empleado
+    });
+    
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        error: 'ID inválido',
+        message: 'El ID proporcionado no es válido'
+      });
+    }
+    
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
+    });
+  }
+});
+
+//-------------------------
 // POST /api/empleados - Dar de alta un empleado
 //-------------------------
 router.post('/', async (req, res) => {
