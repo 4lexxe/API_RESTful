@@ -4,6 +4,7 @@ const cors = require('cors');
 const { colorLog } = require('./utils/colors');
 const connectDB = require('./config/database');
 const sociosRoutes = require('./routes/socios');
+const transaccionesRoutes = require('./routes/transacciones');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,6 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 // Rutas
 //-------------------------
 app.use('/api/socios', sociosRoutes);
+app.use('/api/transacciones', transaccionesRoutes);
 
 //-------------------------
 // Ruta base
@@ -40,6 +42,9 @@ app.get('/api', (req, res) => {
         create: 'POST /api/socios - Dar de alta un socio',
         update: 'PUT /api/socios/:id - Modificar un socio',
         delete: 'DELETE /api/socios/:id - Eliminar un socio'
+      },
+      transacciones: {
+        create: 'POST /api/transacciones - Registrar transacción de traducción'
       }
     }
   });
