@@ -3,7 +3,10 @@ import { RouterModule } from '@angular/router';
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/socios', pathMatch: 'full' },
+  {
+    path: '',
+    loadComponent: () => import('./home/home.component').then(m => m.HomeComponent)
+  },
   {
     path: 'socios',
     loadComponent: () => import('./socios/socios.component').then(m => m.SociosComponent)
@@ -20,7 +23,7 @@ export const routes: Routes = [
     path: 'publicaciones',
     loadComponent: () => import('./publicaciones/publicaciones.component').then(m => m.PublicacionesComponent)
   },
-  { path: '**', redirectTo: '/socios' }
+  { path: '**', redirectTo: '/' }
 ];
 
 @NgModule({
