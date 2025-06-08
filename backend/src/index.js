@@ -61,6 +61,7 @@ app.get('/api', (req, res) => {
       publicaciones: {
         getAll: 'GET /api/publicaciones - Recuperar todas las publicaciones',
         create: 'POST /api/publicaciones - Dar de alta una publicación',
+        update: 'PUT /api/publicaciones/:id - Modificar una publicación',
         delete: 'DELETE /api/publicaciones/:id - Eliminar una publicación'
       }
     }

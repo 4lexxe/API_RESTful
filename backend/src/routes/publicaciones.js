@@ -1,7 +1,7 @@
 const express = require('express');
 const Publicacion = require('../models/Publicacion');
 const Empleado = require('../models/Empleado');
-const { validatePublicacion } = require('../validators/publicacionesValidator');
+const { validatePublicacion, validateUpdatePublicacion } = require('../validators/publicacionesValidator');
 
 const router = express.Router();
 
@@ -108,6 +108,89 @@ router.get('/', async (req, res) => {
     });
     
   } catch (error) {
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
+    });
+  }
+});
+
+//-------------------------
+// PUT /api/publicaciones/:id - Modificar una publicación completa
+//-------------------------
+router.put('/:id', async (req, res) => {
+  try {
+    // Validar datos
+    const { error, value } = validateUpdatePublicacion(req.body);
+    
+    if (error) {
+      return res.status(400).json({
+        error: 'Datos inválidos',
+        message: error.details[0].message
+      });
+    }
+    
+    // Buscar la publicación
+    const publicacion = await Publicacion.findById(req.params.id);
+    
+    if (!publicacion) {
+      return res.status(404).json({
+        error: 'Publicación no encontrada',
+        message: `No existe una publicación con el ID ${req.params.id}`
+      });
+    }
+    
+    // Verificar que el empleado existe (si se cambió)
+    if (value.empleado !== publicacion.empleado.toString()) {
+      const empleadoExiste = await Empleado.findById(value.empleado);
+      if (!empleadoExiste) {
+        return res.status(404).json({
+          error: 'Empleado no encontrado',
+          message: `No existe un empleado con el ID ${value.empleado}`
+        });
+      }
+    }
+    
+    // Actualizar publicación manteniendo timestamps originales
+    const publicacionActualizada = await Publicacion.findByIdAndUpdate(
+      req.params.id,
+      {
+        titulo: value.titulo,
+        contenido: value.contenido,
+        imagenAsociada: value.imagenAsociada,
+        fechaPublicacion: value.fechaPublicacion,
+        empleado: value.empleado,
+        vigente: value.vigente
+      },
+      { 
+        new: true, // Retorna el documento actualizado
+        runValidators: true // Ejecuta validaciones del schema
+      }
+    );
+    
+    // Populate para incluir datos del empleado
+    await publicacionActualizada.populate('empleado', 'nombre apellido email dni');
+    
+    res.json({
+      message: 'Publicación actualizada exitosamente',
+      publicacion: publicacionActualizada
+    });
+    
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        error: 'ID inválido',
+        message: 'El ID proporcionado no es válido'
+      });
+    }
+    
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        error: 'Datos inválidos',
+        message: Object.values(error.errors)[0].message
+      });
+    }
+    
     res.status(500).json({
       error: 'Error interno del servidor',
       message: error.message
