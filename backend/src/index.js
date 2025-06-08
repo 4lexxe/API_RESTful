@@ -36,7 +36,8 @@ app.get('/api', (req, res) => {
     endpoints: {
       health: 'GET /api/health',
       socios: {
-        create: 'POST /api/socios'
+        getAll: 'GET /api/socios - Recuperar todos los socios',
+        create: 'POST /api/socios - Dar de alta un socio'
       }
     }
   });

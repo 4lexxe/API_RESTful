@@ -5,6 +5,54 @@ const { validateSocio } = require('../validators/sociosValidator');
 const router = express.Router();
 
 //-------------------------
+// GET /api/socios - Recuperar TODOS los socios
+//-------------------------
+router.get('/', async (req, res) => {
+  try {
+    const { activo, page = 1, limit = 10 } = req.query;
+    
+    // Crear filtro opcional por estado activo
+    const filter = {};
+    if (activo !== undefined) {
+      filter.activo = activo === 'true';
+    }
+    
+    // Paginación
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+    
+    // Buscar socios con filtros y paginación
+    const socios = await Socio.find(filter)
+      .sort({ numeroSocio: 1 })
+      .skip(skip)
+      .limit(limitNum);
+    
+    // Contar total para paginación
+    const total = await Socio.countDocuments(filter);
+    
+    res.json({
+      message: 'Socios recuperados exitosamente',
+      socios,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+        hasNextPage: pageNum < Math.ceil(total / limitNum),
+        hasPrevPage: pageNum > 1
+      }
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
+    });
+  }
+});
+
+//-------------------------
 // POST /api/socios - Dar de alta un socio
 //-------------------------
 router.post('/', async (req, res) => {

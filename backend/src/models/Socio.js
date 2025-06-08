@@ -41,8 +41,7 @@ const socioSchema = new mongoose.Schema({
   },
   numeroSocio: {
     type: Number,
-    unique: true,
-    required: true
+    unique: true
   },
   activo: {
     type: Boolean,
@@ -56,7 +55,7 @@ const socioSchema = new mongoose.Schema({
 // Middleware para generar número de socio automáticamente
 //-------------------------
 socioSchema.pre('save', async function(next) {
-  if (this.isNew && !this.numeroSocio) {
+  if (this.isNew) {
     try {
       const lastSocio = await this.constructor.findOne({}, {}, { sort: { numeroSocio: -1 } });
       this.numeroSocio = lastSocio ? lastSocio.numeroSocio + 1 : 1;
