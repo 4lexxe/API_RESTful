@@ -5,6 +5,59 @@ const { validateEmpleado } = require('../validators/empleadosValidator');
 const router = express.Router();
 
 //-------------------------
+// GET /api/empleados - Obtener todos los empleados
+//-------------------------
+router.get('/', async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search } = req.query;
+    
+    // Crear filtro de búsqueda opcional
+    const filter = {};
+    if (search) {
+      filter.$or = [
+        { nombre: { $regex: search, $options: 'i' } },
+        { apellido: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { dni: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    // Paginación
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+    
+    // Buscar empleados con filtros y paginación
+    const empleados = await Empleado.find(filter)
+      .sort({ apellido: 1, nombre: 1 }) // Ordenar por apellido y nombre
+      .skip(skip)
+      .limit(limitNum);
+    
+    // Contar total para paginación
+    const total = await Empleado.countDocuments(filter);
+    
+    res.json({
+      message: 'Empleados recuperados exitosamente',
+      empleados,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+        hasNextPage: pageNum < Math.ceil(total / limitNum),
+        hasPrevPage: pageNum > 1
+      }
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
+    });
+  }
+});
+
+//-------------------------
 // POST /api/empleados - Dar de alta un empleado
 //-------------------------
 router.post('/', async (req, res) => {

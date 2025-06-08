@@ -52,6 +52,7 @@ app.get('/api', (req, res) => {
         create: 'POST /api/transacciones - Registrar transacción de traducción'
       },
       empleados: {
+        getAll: 'GET /api/empleados - Obtener todos los empleados',
         create: 'POST /api/empleados - Dar de alta un empleado'
       }
     }
