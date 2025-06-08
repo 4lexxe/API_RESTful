@@ -59,6 +59,7 @@ app.get('/api', (req, res) => {
         create: 'POST /api/empleados - Dar de alta un empleado'
       },
       publicaciones: {
+        getAll: 'GET /api/publicaciones - Recuperar todas las publicaciones',
         create: 'POST /api/publicaciones - Dar de alta una publicación'
       }
     }

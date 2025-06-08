@@ -63,4 +63,56 @@ router.post('/', async (req, res) => {
   }
 });
 
+//-------------------------
+// GET /api/publicaciones - Recuperar TODAS las publicaciones con información de empleados
+//-------------------------
+router.get('/', async (req, res) => {
+  try {
+    const { vigente, empleado, page = 1, limit = 10 } = req.query;
+    
+    // Crear filtros opcionales
+    const filter = {};
+    if (vigente !== undefined) {
+      filter.vigente = vigente === 'true';
+    }
+    if (empleado) {
+      filter.empleado = empleado;
+    }
+    
+    // Paginación
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+    
+    // Buscar publicaciones con filtros y paginación, incluyendo datos del empleado
+    const publicaciones = await Publicacion.find(filter)
+      .populate('empleado', 'nombre apellido email dni') // Incluir datos del empleado
+      .sort({ createdAt: -1 }) // Más recientes primero
+      .skip(skip)
+      .limit(limitNum);
+    
+    // Contar total para paginación
+    const total = await Publicacion.countDocuments(filter);
+    
+    res.json({
+      message: 'Publicaciones recuperadas exitosamente',
+      publicaciones,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+        hasNextPage: pageNum < Math.ceil(total / limitNum),
+        hasPrevPage: pageNum > 1
+      }
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;
