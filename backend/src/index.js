@@ -46,6 +46,7 @@ app.get('/api', (req, res) => {
       transacciones: {
         getAll: 'GET /api/transacciones - Recuperar todas las transacciones',
         getByEmail: 'GET /api/transacciones/cliente/:email - Histórico por cliente',
+        getByIdiomas: 'GET /api/transacciones/idiomas/:origen/:destino - Buscar por idiomas',
         create: 'POST /api/transacciones - Registrar transacción de traducción'
       }
     }
