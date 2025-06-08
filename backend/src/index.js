@@ -38,6 +38,7 @@ app.get('/api', (req, res) => {
       socios: {
         getAll: 'GET /api/socios - Recuperar todos los socios',
         create: 'POST /api/socios - Dar de alta un socio',
+        update: 'PUT /api/socios/:id - Modificar un socio',
         delete: 'DELETE /api/socios/:id - Eliminar un socio'
       }
     }

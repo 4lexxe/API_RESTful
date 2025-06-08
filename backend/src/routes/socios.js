@@ -1,6 +1,6 @@
 const express = require('express');
 const Socio = require('../models/Socio');
-const { validateSocio } = require('../validators/sociosValidator');
+const { validateSocio, validateUpdateSocio } = require('../validators/sociosValidator');
 
 const router = express.Router();
 
@@ -82,6 +82,92 @@ router.post('/', async (req, res) => {
       return res.status(409).json({
         error: 'DNI duplicado',
         message: `Ya existe un socio con el DNI ${req.body.dni}`
+      });
+    }
+    
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        error: 'Datos inválidos',
+        message: Object.values(error.errors)[0].message
+      });
+    }
+    
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
+    });
+  }
+});
+
+//-------------------------
+// PUT /api/socios/:id - Modificar un socio completo
+//-------------------------
+router.put('/:id', async (req, res) => {
+  try {
+    // Validar datos
+    const { error, value } = validateUpdateSocio(req.body);
+    
+    if (error) {
+      return res.status(400).json({
+        error: 'Datos inválidos',
+        message: error.details[0].message
+      });
+    }
+    
+    // Buscar el socio
+    const socio = await Socio.findById(req.params.id);
+    
+    if (!socio) {
+      return res.status(404).json({
+        error: 'Socio no encontrado',
+        message: `No existe un socio con el ID ${req.params.id}`
+      });
+    }
+    
+    // Verificar que el DNI no exista en otro socio
+    if (value.dni !== socio.dni) {
+      const socioConMismoDni = await Socio.findOne({ dni: value.dni });
+      if (socioConMismoDni) {
+        return res.status(409).json({
+          error: 'DNI duplicado',
+          message: `Ya existe otro socio con el DNI ${value.dni}`
+        });
+      }
+    }
+    
+    // Actualizar socio manteniendo numeroSocio y timestamps originales
+    const socioActualizado = await Socio.findByIdAndUpdate(
+      req.params.id,
+      {
+        nombre: value.nombre,
+        apellido: value.apellido,
+        foto: value.foto,
+        dni: value.dni,
+        activo: value.activo
+      },
+      { 
+        new: true, // Retorna el documento actualizado
+        runValidators: true // Ejecuta validaciones del schema
+      }
+    );
+    
+    res.json({
+      message: 'Socio actualizado exitosamente',
+      socio: socioActualizado
+    });
+    
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        error: 'ID inválido',
+        message: 'El ID proporcionado no es válido'
+      });
+    }
+    
+    if (error.code === 11000) {
+      return res.status(409).json({
+        error: 'DNI duplicado',
+        message: `Ya existe otro socio con el DNI ${req.body.dni}`
       });
     }
     
