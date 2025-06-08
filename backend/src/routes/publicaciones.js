@@ -115,4 +115,41 @@ router.get('/', async (req, res) => {
   }
 });
 
+//-------------------------
+// DELETE /api/publicaciones/:id - Eliminar una publicación
+//-------------------------
+router.delete('/:id', async (req, res) => {
+  try {
+    const publicacion = await Publicacion.findByIdAndDelete(req.params.id);
+    
+    if (!publicacion) {
+      return res.status(404).json({
+        error: 'Publicación no encontrada',
+        message: `No existe una publicación con el ID ${req.params.id}`
+      });
+    }
+    
+    // Populate para mostrar información del empleado en la respuesta
+    await publicacion.populate('empleado', 'nombre apellido email');
+    
+    res.json({
+      message: 'Publicación eliminada exitosamente',
+      publicacion: publicacion
+    });
+    
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        error: 'ID inválido',
+        message: 'El ID proporcionado no es válido'
+      });
+    }
+    
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;
