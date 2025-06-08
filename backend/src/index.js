@@ -44,6 +44,7 @@ app.get('/api', (req, res) => {
         delete: 'DELETE /api/socios/:id - Eliminar un socio'
       },
       transacciones: {
+        getAll: 'GET /api/transacciones - Recuperar todas las transacciones',
         create: 'POST /api/transacciones - Registrar transacción de traducción'
       }
     }
