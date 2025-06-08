@@ -116,6 +116,126 @@ router.get('/', async (req, res) => {
 });
 
 //-------------------------
+// GET /api/publicaciones/buscar - Búsqueda combinada con parámetros GET
+//-------------------------
+router.get('/buscar', async (req, res) => {
+  try {
+    const { titulo, vigente, page = 1, limit = 10 } = req.query;
+    
+    // Crear filtros de búsqueda combinada
+    const filter = {};
+    
+    // Filtro por título (búsqueda parcial, case-insensitive)
+    if (titulo && titulo.trim() !== '') {
+      filter.titulo = { $regex: titulo.trim(), $options: 'i' };
+    }
+    
+    // Filtro por vigente
+    if (vigente !== undefined) {
+      filter.vigente = vigente === 'true';
+    }
+    
+    // Paginación
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+    
+    // Buscar publicaciones con filtros combinados, incluyendo datos del empleado
+    const publicaciones = await Publicacion.find(filter)
+      .populate('empleado', 'nombre apellido email dni')
+      .sort({ createdAt: -1 }) // Más recientes primero
+      .skip(skip)
+      .limit(limitNum);
+    
+    // Contar total para paginación
+    const total = await Publicacion.countDocuments(filter);
+    
+    res.json({
+      message: 'Búsqueda combinada realizada exitosamente',
+      filtros: {
+        titulo: titulo || 'No especificado',
+        vigente: vigente !== undefined ? (vigente === 'true') : 'No especificado'
+      },
+      publicaciones,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+        hasNextPage: pageNum < Math.ceil(total / limitNum),
+        hasPrevPage: pageNum > 1
+      }
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
+    });
+  }
+});
+
+//-------------------------
+// POST /api/publicaciones/buscar - Búsqueda combinada con parámetros POST
+//-------------------------
+router.post('/buscar', async (req, res) => {
+  try {
+    const { titulo, vigente, page = 1, limit = 10 } = req.body;
+    
+    // Crear filtros de búsqueda combinada
+    const filter = {};
+    
+    // Filtro por título (búsqueda parcial, case-insensitive)
+    if (titulo && titulo.trim() !== '') {
+      filter.titulo = { $regex: titulo.trim(), $options: 'i' };
+    }
+    
+    // Filtro por vigente
+    if (vigente !== undefined) {
+      filter.vigente = vigente;
+    }
+    
+    // Paginación
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+    
+    // Buscar publicaciones con filtros combinados, incluyendo datos del empleado
+    const publicaciones = await Publicacion.find(filter)
+      .populate('empleado', 'nombre apellido email dni')
+      .sort({ createdAt: -1 }) // Más recientes primero
+      .skip(skip)
+      .limit(limitNum);
+    
+    // Contar total para paginación
+    const total = await Publicacion.countDocuments(filter);
+    
+    res.json({
+      message: 'Búsqueda combinada POST realizada exitosamente',
+      filtros: {
+        titulo: titulo || 'No especificado',
+        vigente: vigente !== undefined ? vigente : 'No especificado'
+      },
+      publicaciones,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+        hasNextPage: pageNum < Math.ceil(total / limitNum),
+        hasPrevPage: pageNum > 1
+      }
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
+    });
+  }
+});
+
+//-------------------------
 // PUT /api/publicaciones/:id - Modificar una publicación completa
 //-------------------------
 router.put('/:id', async (req, res) => {

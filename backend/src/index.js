@@ -60,6 +60,8 @@ app.get('/api', (req, res) => {
       },
       publicaciones: {
         getAll: 'GET /api/publicaciones - Recuperar todas las publicaciones',
+        search: 'GET /api/publicaciones/buscar - Búsqueda combinada (params)',
+        searchPost: 'POST /api/publicaciones/buscar - Búsqueda combinada (body)',
         create: 'POST /api/publicaciones - Dar de alta una publicación',
         update: 'PUT /api/publicaciones/:id - Modificar una publicación',
         delete: 'DELETE /api/publicaciones/:id - Eliminar una publicación'
