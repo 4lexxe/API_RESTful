@@ -5,6 +5,7 @@ const { colorLog } = require('./utils/colors');
 const connectDB = require('./config/database');
 const sociosRoutes = require('./routes/socios');
 const transaccionesRoutes = require('./routes/transacciones');
+const empleadosRoutes = require('./routes/empleados');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 //-------------------------
 app.use('/api/socios', sociosRoutes);
 app.use('/api/transacciones', transaccionesRoutes);
+app.use('/api/empleados', empleadosRoutes);
 
 //-------------------------
 // Ruta base
@@ -48,6 +50,9 @@ app.get('/api', (req, res) => {
         getByEmail: 'GET /api/transacciones/cliente/:email - Histórico por cliente',
         getByIdiomas: 'GET /api/transacciones/idiomas/:origen/:destino - Buscar por idiomas',
         create: 'POST /api/transacciones - Registrar transacción de traducción'
+      },
+      empleados: {
+        create: 'POST /api/empleados - Dar de alta un empleado'
       }
     }
   });
