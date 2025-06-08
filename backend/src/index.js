@@ -37,7 +37,8 @@ app.get('/api', (req, res) => {
       health: 'GET /api/health',
       socios: {
         getAll: 'GET /api/socios - Recuperar todos los socios',
-        create: 'POST /api/socios - Dar de alta un socio'
+        create: 'POST /api/socios - Dar de alta un socio',
+        delete: 'DELETE /api/socios/:id - Eliminar un socio'
       }
     }
   });

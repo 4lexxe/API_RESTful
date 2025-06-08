@@ -99,4 +99,38 @@ router.post('/', async (req, res) => {
   }
 });
 
+//-------------------------
+// DELETE /api/socios/:id - Eliminar un socio
+//-------------------------
+router.delete('/:id', async (req, res) => {
+  try {
+    const socio = await Socio.findByIdAndDelete(req.params.id);
+    
+    if (!socio) {
+      return res.status(404).json({
+        error: 'Socio no encontrado',
+        message: `No existe un socio con el ID ${req.params.id}`
+      });
+    }
+    
+    res.json({
+      message: 'Socio eliminado exitosamente',
+      socio: socio
+    });
+    
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        error: 'ID inválido',
+        message: 'El ID proporcionado no es válido'
+      });
+    }
+    
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;
