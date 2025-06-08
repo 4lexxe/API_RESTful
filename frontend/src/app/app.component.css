@@ -1,0 +1,141 @@
+.app-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar {
+  background: #ffffff;
+  border-bottom: 4px solid #000000;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.nav-brand h2 {
+  color: #000000;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  border: 3px solid #000000;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: #f1f3f4;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  background: #ffffff;
+  border: 3px solid #000000;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #000000;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.nav-item:hover {
+  background: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.nav-item.active {
+  background: #d4edda;
+  color: #000000;
+}
+
+.nav-icon {
+  font-size: 1.2rem;
+}
+
+.main-content {
+  padding: 2rem;
+  min-height: calc(100vh - 100px);
+}
+
+/* Clases reutilizables */
+:global(.card) {
+  background: #ffffff;
+  border: 4px solid #000000;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+:global(.btn) {
+  padding: 0.8rem 1.5rem;
+  border: 3px solid #000000;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  background: #ffffff;
+  color: #000000;
+  margin-right: 0.5rem;
+}
+
+:global(.btn-primary) {
+  background: #d1ecf1;
+  border-color: #000000;
+}
+
+:global(.btn-success) {
+  background: #d4edda;
+  border-color: #000000;
+}
+
+:global(.btn-danger) {
+  background: #f8d7da;
+  border-color: #000000;
+}
+
+:global(.btn:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+:global(.form-input) {
+  width: 100%;
+  padding: 0.8rem;
+  border: 3px solid #000000;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  background: #ffffff;
+}
+
+:global(.form-input:focus) {
+  border-color: #000000;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
+
+:global(.title) {
+  color: #000000;
+  margin-bottom: 1.5rem;
+  border-bottom: 3px solid #000000;
+  padding-bottom: 0.5rem;
+}
+
+:global(.flex) {
+  display: flex;
+  gap: 1rem;
+}
+
+:global(.mt-2) {
+  margin-top: 2rem;
+}
