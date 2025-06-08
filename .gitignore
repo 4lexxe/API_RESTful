@@ -6,6 +6,12 @@ frontend/node_modules/
 # Archivos del directorio padre
 ../.history/
 
+# Environment variables
+backend/.env
+.env
+.env.local
+.env.production
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

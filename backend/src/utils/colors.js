@@ -1,4 +1,6 @@
+//-------------------------
 // Colores ANSI para terminal
+//-------------------------
 const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -23,7 +25,9 @@ const colors = {
   bgWhite: '\x1b[47m'
 };
 
+//-------------------------
 // Funciones helper para logging con colores
+//-------------------------
 const colorLog = {
   info: (message) => console.log(`${colors.cyan}ℹ ${message}${colors.reset}`),
   success: (message) => console.log(`${colors.green}✓ ${message}${colors.reset}`),

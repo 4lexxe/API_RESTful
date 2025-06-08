@@ -1,0 +1,32 @@
+{
+  "socios_prueba": [
+    {
+      "nombre": "Juan Carlos",
+      "apellido": "Pérez González", 
+      "foto": "https://randomuser.me/api/portraits/men/1.jpg",
+      "dni": "12345678",
+      "activo": true
+    },
+    {
+      "nombre": "María Elena",
+      "apellido": "Rodríguez López",
+      "foto": "https://randomuser.me/api/portraits/women/2.jpg", 
+      "dni": "87654321",
+      "activo": true
+    },
+    {
+      "nombre": "Carlos Alberto",
+      "apellido": "Fernández Silva",
+      "foto": "https://randomuser.me/api/portraits/men/3.jpg",
+      "dni": "11223344", 
+      "activo": false
+    },
+    {
+      "nombre": "Ana Sofía",
+      "apellido": "Martínez Castro",
+      "foto": "https://randomuser.me/api/portraits/women/4.jpg",
+      "dni": "55667788",
+      "activo": true
+    }
+  ]
+}
