@@ -163,6 +163,52 @@
       </h3>
 
       <div class="filter-section">
+        <!-- Búsqueda combinada por título y vigente -->
+        <div class="filter-group">
+          <label class="input-label">Búsqueda Combinada</label>
+          <div class="combined-search">
+            <div class="search-row">
+              <div class="search-field">
+                <label class="sub-label">Título (búsqueda parcial)</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  [(ngModel)]="busquedaCombinada.titulo"
+                  placeholder="Parte del título..."
+                  [disabled]="cargando">
+              </div>
+              <div class="search-field">
+                <label class="sub-label">Estado</label>
+                <select
+                  class="form-input"
+                  [(ngModel)]="busquedaCombinada.vigente"
+                  [disabled]="cargando">
+                  <option [value]="undefined">Todos los estados</option>
+                  <option [value]="true">Solo Vigentes</option>
+                  <option [value]="false">Solo No Vigentes</option>
+                </select>
+              </div>
+              <div class="search-actions">
+                <button
+                  class="btn btn-primary btn-sm"
+                  (click)="buscarPublicacionesCombinado()"
+                  [disabled]="cargando">
+                  <i class="bi bi-search me-1"></i>
+                  {{ getLoadButtonText('busqueda') }}
+                </button>
+                <button
+                  class="btn btn-secondary btn-sm"
+                  (click)="limpiarBusquedaCombinada()"
+                  [disabled]="cargando">
+                  <i class="bi bi-x-circle me-1"></i>
+                  Limpiar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filtro por empleado -->
         <div class="filter-group">
           <label class="input-label">Filtrar por Empleado</label>
           <div class="input-with-button">
@@ -271,15 +317,33 @@
             <p class="content-preview">{{ publicacion.contenido.substring(0, 150) }}{{ publicacion.contenido.length > 150 ? '...' : '' }}</p>
           </div>
 
-          <!-- Botón de acción -->
-          <div class="publicacion-actions">
+          <!-- Botones de acción arriba -->
+          <div class="publicacion-actions-top">
             <button
-              class="btn btn-info btn-sm"
+              class="btn btn-info btn-sm me-2"
               (click)="verDetallePublicacion(publicacion._id!)"
               [disabled]="cargando"
               title="Ver detalles completos">
               <i class="bi bi-eye-fill me-1"></i>
-              Ver Completa
+              Ver Detalle
+            </button>
+
+            <button
+              class="btn btn-primary btn-sm me-2"
+              (click)="mostrarModalEdicion(publicacion)"
+              [disabled]="cargando"
+              title="Editar publicación">
+              <i class="bi bi-pencil-fill me-1"></i>
+              Editar
+            </button>
+
+            <button
+              class="btn btn-danger btn-sm"
+              (click)="mostrarConfirmacionEliminar(publicacion)"
+              [disabled]="cargando"
+              title="Eliminar publicación">
+              <i class="bi bi-trash-fill me-1"></i>
+              Eliminar
             </button>
           </div>
         </div>
@@ -301,9 +365,27 @@
           <i class="bi bi-file-earmark-text me-2"></i>
           Detalle de Publicación
         </h3>
-        <button class="btn btn-sm btn-close" (click)="cerrarDetalle()">
-          <i class="bi bi-x-lg"></i>
-        </button>
+        <div class="modal-header-actions">
+          <button
+            class="btn btn-primary btn-sm me-2"
+            (click)="editarPublicacionDesdeModal()"
+            title="Editar publicación">
+            <i class="bi bi-pencil-fill me-1"></i>
+            Editar
+          </button>
+
+          <button
+            class="btn btn-danger btn-sm me-2"
+            (click)="eliminarPublicacionDesdeModal()"
+            title="Eliminar publicación">
+            <i class="bi bi-trash-fill me-1"></i>
+            Eliminar
+          </button>
+
+          <button class="btn btn-sm btn-close" (click)="cerrarDetalle()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
       </div>
 
       <div class="modal-body">
@@ -311,6 +393,7 @@
           <div class="detail-header">
             <h4>{{ publicacionSeleccionada.titulo }}</h4>
             <span class="status-badge" [class]="publicacionSeleccionada.vigente ? 'status-active' : 'status-inactive'">
+              <i class="bi bi-circle-fill me-1" [class]="publicacionSeleccionada.vigente ? 'text-success' : 'text-danger'"></i>
               {{ publicacionSeleccionada.vigente ? 'Vigente' : 'No Vigente' }}
             </span>
           </div>
@@ -321,23 +404,335 @@
 
           <div class="detail-grid">
             <div class="detail-item">
-              <label>Empleado Responsable:</label>
+              <label>
+                <i class="bi bi-person-badge me-2"></i>
+                Empleado Responsable:
+              </label>
               <span>{{ obtenerNombreEmpleado(publicacionSeleccionada.empleado) }}</span>
             </div>
             <div class="detail-item">
-              <label>Fecha de Publicación:</label>
+              <label>
+                <i class="bi bi-calendar me-2"></i>
+                Fecha de Publicación:
+              </label>
               <span>{{ formatearFecha(publicacionSeleccionada.fechaPublicacion) }}</span>
             </div>
             <div class="detail-item" *ngIf="publicacionSeleccionada.createdAt">
-              <label>Creado el:</label>
+              <label>
+                <i class="bi bi-clock me-2"></i>
+                Fecha de Creación:
+              </label>
               <span>{{ formatearFecha(publicacionSeleccionada.createdAt) }}</span>
+            </div>
+            <div class="detail-item" *ngIf="publicacionSeleccionada.updatedAt && publicacionSeleccionada.updatedAt !== publicacionSeleccionada.createdAt">
+              <label>
+                <i class="bi bi-arrow-clockwise me-2"></i>
+                Última Modificación:
+              </label>
+              <span>{{ formatearFecha(publicacionSeleccionada.updatedAt) }}</span>
             </div>
           </div>
 
           <div class="content-section">
-            <label class="content-label">Contenido:</label>
+            <label class="content-label">
+              <i class="bi bi-file-text me-2"></i>
+              Contenido:
+            </label>
             <div class="content-text">{{ publicacionSeleccionada.contenido }}</div>
           </div>
+
+          <div class="modal-statistics" *ngIf="publicacionSeleccionada.contenido">
+            <div class="stat-item">
+              <i class="bi bi-type me-1"></i>
+              <strong>Caracteres:</strong> {{ publicacionSeleccionada.contenido.length }}
+            </div>
+            <div class="stat-item">
+              <i class="bi bi-chat-text me-1"></i>
+              <strong>Palabras:</strong> {{ contarPalabras(publicacionSeleccionada.contenido) }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-footer-info">
+          <small class="text-muted">
+            <i class="bi bi-info-circle me-1"></i>
+            ID: {{ publicacionSeleccionada._id }}
+          </small>
+        </div>
+        <div class="modal-footer-actions">
+          <button
+            class="btn btn-secondary"
+            (click)="cerrarDetalle()">
+            <i class="bi bi-x-circle me-1"></i>
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de edición de publicación -->
+  <div *ngIf="mostrandoModalEdicion && publicacionAEditar" class="modal-overlay" (click)="cerrarModalEdicion()">
+    <div class="modal-content edit-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="bi bi-pencil-square me-2"></i>
+          Editar Publicación
+        </h3>
+        <button class="btn btn-sm btn-close" (click)="cerrarModalEdicion()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form #editPublicacionForm="ngForm">
+          <div class="edit-form-container">
+            <!-- Información de la publicación original -->
+            <div class="original-info">
+              <h5>
+                <i class="bi bi-info-circle me-2"></i>
+                Publicación Original
+              </h5>
+              <div class="original-preview">
+                <img [src]="publicacionAEditar.imagenAsociada" [alt]="publicacionAEditar.titulo" class="original-image">
+                <div class="original-details">
+                  <h6>{{ publicacionAEditar.titulo }}</h6>
+                  <p><strong>Empleado:</strong> {{ obtenerNombreEmpleado(publicacionAEditar.empleado) }}</p>
+                  <p><strong>Fecha:</strong> {{ formatearFecha(publicacionAEditar.fechaPublicacion) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Formulario de edición -->
+            <div class="edit-form">
+              <h5>
+                <i class="bi bi-pencil me-2"></i>
+                Editar Datos
+              </h5>
+
+              <div class="grid-2">
+                <div class="input-group">
+                  <label class="input-label">Título</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    [(ngModel)]="publicacionEditada.titulo"
+                    name="tituloEdit"
+                    required
+                    minlength="5"
+                    maxlength="200"
+                    placeholder="Ingrese el título de la publicación"
+                    #tituloEdit="ngModel">
+                  <div *ngIf="tituloEdit.invalid && tituloEdit.touched" class="input-error">
+                    El título es requerido (5-200 caracteres)
+                  </div>
+                </div>
+
+                <div class="input-group">
+                  <label class="input-label">Empleado Responsable</label>
+                  <select
+                    class="form-input"
+                    [(ngModel)]="publicacionEditada.empleado"
+                    name="empleadoEdit"
+                    required
+                    #empleadoEdit="ngModel">
+                    <option value="">Seleccione un empleado</option>
+                    <option *ngFor="let empleado of empleados" [value]="empleado._id">
+                      {{ empleado.nombre }} {{ empleado.apellido }} - {{ empleado.puesto }}
+                    </option>
+                  </select>
+                  <div *ngIf="empleadoEdit.invalid && empleadoEdit.touched" class="input-error">
+                    Debe seleccionar un empleado responsable
+                  </div>
+                </div>
+
+                <div class="input-group">
+                  <label class="input-label">Fecha de Publicación</label>
+                  <input
+                    type="date"
+                    class="form-input"
+                    [(ngModel)]="publicacionEditada.fechaPublicacion"
+                    name="fechaEdit"
+                    required
+                    #fechaEdit="ngModel">
+                  <div *ngIf="fechaEdit.invalid && fechaEdit.touched" class="input-error">
+                    La fecha de publicación es requerida
+                  </div>
+                </div>
+
+                <div class="input-group">
+                  <label class="input-label">Nueva Imagen (opcional)</label>
+                  <input
+                    type="file"
+                    class="form-input"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                    (change)="onImagenChangeEdicion($event)"
+                    #imagenEditInput>
+                  <div class="file-info">
+                    <small class="text-muted">
+                      <i class="bi bi-info-circle me-1"></i>
+                      Deje vacío para mantener la imagen actual. Formatos: JPEG, PNG, GIF, WebP.
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label class="input-label">Contenido</label>
+                <textarea
+                  class="form-input textarea-large"
+                  [(ngModel)]="publicacionEditada.contenido"
+                  name="contenidoEdit"
+                  required
+                  minlength="10"
+                  maxlength="10000"
+                  placeholder="Escriba el contenido de la publicación..."
+                  rows="6"
+                  #contenidoEdit="ngModel"></textarea>
+                <div *ngIf="contenidoEdit.invalid && contenidoEdit.touched" class="input-error">
+                  El contenido es requerido (10-10000 caracteres)
+                </div>
+              </div>
+
+              <!-- Vista previa de imagen editada -->
+              <div *ngIf="imagenPreviewEdicion" class="image-preview">
+                <label class="input-label">Vista previa de la imagen:</label>
+                <img [src]="imagenPreviewEdicion" alt="Vista previa" class="preview-img">
+              </div>
+
+              <div class="checkbox-group compact">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    class="checkbox-input"
+                    [(ngModel)]="publicacionEditada.vigente"
+                    name="vigenteEdit">
+                  <span>Publicación Vigente</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <!-- Mensajes de estado en el modal -->
+        <div *ngIf="error" class="alert alert-error mt-2">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {{ error }}
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-footer-info">
+          <small class="text-muted">
+            <i class="bi bi-info-circle me-1"></i>
+            ID: {{ publicacionAEditar._id }}
+          </small>
+        </div>
+        <div class="modal-footer-actions">
+          <button
+            class="btn btn-secondary me-2"
+            (click)="cerrarModalEdicion()"
+            [disabled]="editando">
+            <i class="bi bi-x-circle me-1"></i>
+            Cancelar
+          </button>
+
+          <button
+            class="btn btn-success"
+            (click)="confirmarEditarPublicacion()"
+            [disabled]="editPublicacionForm.invalid || editando || !publicacionEditada.imagenAsociada">
+            <i class="bi bi-check-circle-fill me-1"></i>
+            {{ editando ? 'Guardando...' : 'Guardar Cambios' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmación de eliminación -->
+  <div *ngIf="mostrandoConfirmacionEliminar && publicacionAEliminar" class="modal-overlay" (click)="cerrarConfirmacionEliminar()">
+    <div class="modal-content confirmation-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i>
+          Confirmar Eliminación
+        </h3>
+        <button class="btn btn-sm btn-close" (click)="cerrarConfirmacionEliminar()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="confirmation-content">
+          <div class="warning-message">
+            <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+            <strong>¿Está seguro que desea eliminar esta publicación?</strong>
+          </div>
+
+          <div class="publication-info">
+            <div class="publication-preview">
+              <img [src]="publicacionAEliminar.imagenAsociada" [alt]="publicacionAEliminar.titulo" class="preview-image">
+            </div>
+
+            <div class="publication-details">
+              <h4 class="publication-title">{{ publicacionAEliminar.titulo }}</h4>
+
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <strong>Empleado:</strong> {{ obtenerNombreEmpleado(publicacionAEliminar.empleado) }}
+                </div>
+
+                <div class="detail-item">
+                  <strong>Fecha:</strong> {{ formatearFecha(publicacionAEliminar.fechaPublicacion) }}
+                </div>
+
+                <div class="detail-item">
+                  <strong>Estado:</strong>
+                  <span [class]="publicacionAEliminar.vigente ? 'text-success' : 'text-danger'">
+                    {{ publicacionAEliminar.vigente ? 'Vigente' : 'No Vigente' }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="content-preview">
+                <strong>Contenido:</strong>
+                <p>{{ publicacionAEliminar.contenido.substring(0, 150) }}{{ publicacionAEliminar.contenido.length > 150 ? '...' : '' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="warning-note">
+            <i class="bi bi-info-circle me-2"></i>
+            Esta acción no se puede deshacer. La publicación será eliminada permanentemente.
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-footer-info">
+          <small class="text-muted">
+            <i class="bi bi-info-circle me-1"></i>
+            ID: {{ publicacionAEliminar._id }}
+          </small>
+        </div>
+        <div class="modal-footer-actions">
+          <button
+            class="btn btn-secondary me-2"
+            (click)="cerrarConfirmacionEliminar()"
+            [disabled]="eliminando">
+            <i class="bi bi-x-circle me-1"></i>
+            Cancelar
+          </button>
+
+          <button
+            class="btn btn-danger"
+            (click)="confirmarEliminarPublicacion()"
+            [disabled]="eliminando">
+            <i class="bi bi-trash-fill me-1"></i>
+            {{ eliminando ? 'Eliminando...' : 'Eliminar Publicación' }}
+          </button>
         </div>
       </div>
     </div>

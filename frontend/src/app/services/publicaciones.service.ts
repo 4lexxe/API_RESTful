@@ -67,6 +67,32 @@ export class PublicacionesService {
   }
 
   //-------------------------
+  // UPDATE - PUT /api/publicaciones/:id - Actualizar una publicación
+  //-------------------------
+  async actualizarPublicacion(id: string, publicacion: PublicacionCreateRequest): Promise<PublicacionResponse> {
+    try {
+      const response = await apiClient.put<PublicacionResponse>(`${this.endpoint}/${id}`, publicacion);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error actualizando publicación:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  //-------------------------
+  // DELETE - DELETE /api/publicaciones/:id - Eliminar una publicación
+  //-------------------------
+  async eliminarPublicacion(id: string): Promise<PublicacionResponse> {
+    try {
+      const response = await apiClient.delete<PublicacionResponse>(`${this.endpoint}/${id}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error eliminando publicación:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  //-------------------------
   // Métodos de filtrado específico
   //-------------------------
   async obtenerPublicacionesVigentes(): Promise<PublicacionesListResponse> {
@@ -75,6 +101,47 @@ export class PublicacionesService {
 
   async obtenerPublicacionesPorEmpleado(empleadoId: string): Promise<PublicacionesListResponse> {
     return this.obtenerPublicaciones({ empleado: empleadoId });
+  }
+
+  //-------------------------
+  // BÚSQUEDA COMBINADA - GET /api/publicaciones/buscar
+  //-------------------------
+  async buscarPublicacionesGET(params: {
+    titulo?: string;
+    vigente?: boolean;
+    page?: number;
+    limit?: number;
+  }): Promise<PublicacionesListResponse> {
+    try {
+      const response = await apiClient.get<PublicacionesListResponse>(`${this.endpoint}/buscar`, {
+        params: {
+          ...params,
+          vigente: params.vigente !== undefined ? params.vigente.toString() : undefined
+        }
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Error en búsqueda combinada GET:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  //-------------------------
+  // BÚSQUEDA COMBINADA - POST /api/publicaciones/buscar
+  //-------------------------
+  async buscarPublicacionesPOST(data: {
+    titulo?: string;
+    vigente?: boolean;
+    page?: number;
+    limit?: number;
+  }): Promise<PublicacionesListResponse> {
+    try {
+      const response = await apiClient.post<PublicacionesListResponse>(`${this.endpoint}/buscar`, data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error en búsqueda combinada POST:', error);
+      throw this.handleError(error);
+    }
   }
 
   //-------------------------
