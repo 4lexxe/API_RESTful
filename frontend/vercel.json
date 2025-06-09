@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "name": "api-restful-frontend",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/frontend",
+  "framework": "angular",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

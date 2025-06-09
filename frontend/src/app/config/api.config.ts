@@ -1,9 +1,10 @@
 import axios, { AxiosInstance } from 'axios';
+import { environment } from '../../environments/environment';
 
 // Configuración base de la API
 export const API_CONFIG = {
-  baseURL: 'http://localhost:3000/api',
-  timeout: 10000,
+  baseURL: environment.apiUrl,
+  timeout: 30000, // Aumentar timeout para servicios en cloud
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
