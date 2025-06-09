@@ -52,8 +52,7 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
-              "baseHref": "/",
-              "deployUrl": "/"
+              "baseHref": "/"
             },
             "development": {
               "optimization": false,
