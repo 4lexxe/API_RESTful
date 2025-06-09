@@ -1,0 +1,370 @@
+<div class="main-container empleados-container">
+  <!-- PRIMER CONTENEDOR: Formulario de registro -->
+  <div class="card main-card">
+    <h1 class="title">Registro de Empleados</h1>
+    <p>Formulario para dar de alta nuevos empleados en el sistema.</p>
+
+    <div class="black-border-container compact">
+      <h3 class="form-section-title">
+        <i class="bi bi-person-plus me-2"></i>
+        Registrar Nuevo Empleado
+      </h3>
+
+      <form (ngSubmit)="crearEmpleado()" #empleadoForm="ngForm">
+        <div class="grid-2">
+          <div class="input-group">
+            <label class="input-label">Nombre</label>
+            <input
+              type="text"
+              class="form-input"
+              [(ngModel)]="nuevoEmpleado.nombre"
+              name="nombre"
+              required
+              minlength="2"
+              maxlength="50"
+              placeholder="Ingrese el nombre"
+              #nombre="ngModel">
+            <div *ngIf="nombre.invalid && nombre.touched" class="input-error">
+              El nombre es requerido (2-50 caracteres)
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Apellido</label>
+            <input
+              type="text"
+              class="form-input"
+              [(ngModel)]="nuevoEmpleado.apellido"
+              name="apellido"
+              required
+              minlength="2"
+              maxlength="50"
+              placeholder="Ingrese el apellido"
+              #apellido="ngModel">
+            <div *ngIf="apellido.invalid && apellido.touched" class="input-error">
+              El apellido es requerido (2-50 caracteres)
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Email</label>
+            <input
+              type="email"
+              class="form-input"
+              [(ngModel)]="nuevoEmpleado.email"
+              name="email"
+              required
+              placeholder="empleado@empresa.com"
+              #email="ngModel">
+            <div *ngIf="email.invalid && email.touched" class="input-error">
+              El email es requerido y debe ser válido
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">DNI</label>
+            <input
+              type="text"
+              class="form-input"
+              [(ngModel)]="nuevoEmpleado.dni"
+              name="dni"
+              required
+              pattern="[0-9]{7,8}"
+              placeholder="12345678"
+              #dni="ngModel">
+            <div *ngIf="dni.invalid && dni.touched" class="input-error">
+              El DNI debe tener 7 u 8 dígitos
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Puesto</label>
+            <select
+              class="form-input"
+              [(ngModel)]="nuevoEmpleado.puesto"
+              name="puesto"
+              required
+              #puesto="ngModel">
+              <option value="">Seleccione un puesto</option>
+              <option *ngFor="let puesto of puestosDisponibles" [value]="puesto">
+                {{ puesto }}
+              </option>
+            </select>
+            <div *ngIf="puesto.invalid && puesto.touched" class="input-error">
+              El puesto es requerido
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Salario (€)</label>
+            <input
+              type="number"
+              class="form-input"
+              [(ngModel)]="nuevoEmpleado.salario"
+              name="salario"
+              required
+              min="0"
+              step="0.01"
+              placeholder="35000.00"
+              #salario="ngModel">
+            <div *ngIf="salario.invalid && salario.touched" class="input-error">
+              El salario debe ser un número positivo
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Fecha de Ingreso</label>
+            <input
+              type="date"
+              class="form-input"
+              [(ngModel)]="nuevoEmpleado.fechaIngreso"
+              name="fechaIngreso"
+              required
+              #fechaIngreso="ngModel">
+            <div *ngIf="fechaIngreso.invalid && fechaIngreso.touched" class="input-error">
+              La fecha de ingreso es requerida
+            </div>
+          </div>
+        </div>
+
+        <div class="checkbox-group compact">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              class="checkbox-input"
+              [(ngModel)]="nuevoEmpleado.activo"
+              name="activo">
+            <span>Empleado Activo</span>
+          </label>
+        </div>
+
+        <div class="form-actions mt-1">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="empleadoForm.invalid || cargando">
+            <i class="bi bi-person-plus-fill me-2"></i>
+            {{ getSubmitButtonText() }}
+          </button>
+
+          <button
+            type="button"
+            class="btn"
+            (click)="limpiarFormulario()">
+            <i class="bi bi-arrow-clockwise me-2"></i>
+            Limpiar
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Mensajes de estado -->
+    <div *ngIf="mensaje" class="alert alert-success">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      {{ mensaje }}
+    </div>
+
+    <div *ngIf="error" class="alert alert-error">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {{ error }}
+    </div>
+  </div>
+
+  <!-- SEPARACIÓN VISUAL entre contenedores -->
+  <div class="container-separator"></div>
+
+  <!-- SEGUNDO CONTENEDOR: Listado y búsqueda de empleados -->
+  <div class="card main-card">
+    <h1 class="title">Gestión de Empleados</h1>
+    <p>Consulta, búsqueda y visualización de empleados registrados en el sistema.</p>
+
+    <!-- Sección de búsquedas y filtros -->
+    <div class="black-border-container compact">
+      <h3 class="form-section-title">
+        <i class="bi bi-search me-2"></i>
+        Búsqueda de Empleados
+      </h3>
+
+      <div class="search-section">
+        <div class="search-group">
+          <label class="input-label">Buscar por nombre, apellido, email o DNI</label>
+          <div class="input-with-button">
+            <input
+              type="text"
+              class="form-input"
+              [(ngModel)]="terminoBusqueda"
+              placeholder="Ingrese término de búsqueda..."
+              [disabled]="cargando"
+              (keyup.enter)="buscarEmpleados()">
+            <button
+              class="btn btn-info btn-sm"
+              (click)="buscarEmpleados()"
+              [disabled]="cargando || !terminoBusqueda.trim()">
+              <i class="bi bi-search me-1"></i>
+              {{ getLoadButtonText('busqueda') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de acción principales -->
+      <div class="form-actions">
+        <button
+          class="btn btn-success me-2"
+          (click)="cargarEmpleados()"
+          [disabled]="cargando">
+          <i class="bi bi-arrow-repeat me-2"></i>
+          {{ getLoadButtonText('todos') }}
+        </button>
+
+        <button
+          class="btn btn-secondary"
+          (click)="limpiarBusqueda()"
+          [disabled]="cargando">
+          <i class="bi bi-x-circle me-2"></i>
+          Limpiar Búsqueda
+        </button>
+      </div>
+    </div>
+
+    <!-- Indicador de filtro aplicado -->
+    <div *ngIf="filtroActivo !== 'todos'" class="filter-indicator">
+      <i class="bi bi-funnel-fill me-2"></i>
+      <span>Mostrando: <strong>{{ getFiltroTexto() }}</strong></span>
+      <button class="btn btn-link btn-sm ms-2" (click)="limpiarBusqueda()">
+        <i class="bi bi-x-circle me-1"></i>
+        Quitar filtro
+      </button>
+    </div>
+
+    <!-- Lista de empleados -->
+    <div *ngIf="empleados.length > 0" class="mt-2 black-border-container compact">
+      <h3 class="section-title">
+        <i class="bi bi-people-fill me-2"></i>
+        {{ getTituloListado() }} ({{ empleados.length }})
+      </h3>
+      <div class="empleados-grid">
+        <div *ngFor="let empleado of empleados" class="empleado-card compact">
+
+          <div class="empleado-header">
+            <div class="empleado-info">
+              <h4 class="empleado-name">{{ empleado.nombre }} {{ empleado.apellido }}</h4>
+              <p class="empleado-detail">
+                <i class="bi bi-briefcase me-1"></i>
+                {{ empleado.puesto }}
+              </p>
+            </div>
+            <div class="status-info">
+              <span class="status-badge" [class]="empleado.activo ? 'status-active' : 'status-inactive'">
+                <i class="bi bi-circle-fill me-1" [class]="empleado.activo ? 'text-success' : 'text-danger'"></i>
+                {{ empleado.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="empleado-details">
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="bi bi-envelope me-1"></i>
+                Email:
+              </span>
+              <span class="detail-value">{{ empleado.email }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="bi bi-card-text me-1"></i>
+                DNI:
+              </span>
+              <span class="detail-value">{{ empleado.dni }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="bi bi-currency-euro me-1"></i>
+                Salario:
+              </span>
+              <span class="detail-value salary">{{ formatearSalario(empleado.salario) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="bi bi-calendar me-1"></i>
+                Ingreso:
+              </span>
+              <span class="detail-value">{{ formatearFecha(empleado.fechaIngreso) }}</span>
+            </div>
+          </div>
+
+          <!-- Botón de acción -->
+          <div class="empleado-actions">
+            <button
+              class="btn btn-info btn-sm"
+              (click)="verDetalleEmpleado(empleado._id!)"
+              [disabled]="cargando"
+              title="Ver detalles completos">
+              <i class="bi bi-eye-fill me-1"></i>
+              Ver Detalles
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div *ngIf="empleados.length === 0 && !cargando" class="empty-state mt-2">
+      <i class="bi bi-person-x display-1 text-muted mb-3"></i>
+      <p>{{ getMensajeVacio() }}</p>
+    </div>
+  </div>
+
+  <!-- Modal de detalles del empleado -->
+  <div *ngIf="mostrandoDetalle && empleadoSeleccionado" class="modal-overlay" (click)="cerrarDetalle()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="bi bi-person-circle me-2"></i>
+          Detalles del Empleado
+        </h3>
+        <button class="btn btn-sm btn-close" (click)="cerrarDetalle()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="employee-detail-card">
+          <div class="detail-header">
+            <h4>{{ empleadoSeleccionado.nombre }} {{ empleadoSeleccionado.apellido }}</h4>
+            <span class="status-badge" [class]="empleadoSeleccionado.activo ? 'status-active' : 'status-inactive'">
+              {{ empleadoSeleccionado.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Email:</label>
+              <span>{{ empleadoSeleccionado.email }}</span>
+            </div>
+            <div class="detail-item">
+              <label>DNI:</label>
+              <span>{{ empleadoSeleccionado.dni }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Puesto:</label>
+              <span>{{ empleadoSeleccionado.puesto }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Salario:</label>
+              <span class="salary">{{ formatearSalario(empleadoSeleccionado.salario) }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Fecha de Ingreso:</label>
+              <span>{{ formatearFecha(empleadoSeleccionado.fechaIngreso) }}</span>
+            </div>
+            <div class="detail-item" *ngIf="empleadoSeleccionado.createdAt">
+              <label>Registrado el:</label>
+              <span>{{ formatearFecha(empleadoSeleccionado.createdAt) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
