@@ -42,12 +42,17 @@ export class EmpleadosService {
     limit?: number;
   }): Promise<EmpleadosListResponse> {
     try {
+      console.log('🚀 Solicitando empleados al backend...');
       const response = await apiClient.get<EmpleadosListResponse>(this.endpoint, {
-        params
+        params: {
+          ...params,
+          limit: 100 // Asegurar que obtenemos todos los empleados para los selects
+        }
       });
+      console.log('✅ Respuesta del backend - empleados:', response.data.empleados.length);
       return response.data;
     } catch (error: any) {
-      console.error('Error obteniendo empleados:', error);
+      console.error('❌ Error obteniendo empleados:', error);
       throw this.handleError(error);
     }
   }

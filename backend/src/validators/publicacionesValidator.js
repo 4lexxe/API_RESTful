@@ -26,9 +26,11 @@ const publicacionSchema = Joi.object({
   
   imagenAsociada: Joi.string()
     .pattern(/^data:image\/(jpeg|jpg|png|gif|bmp|webp);base64,/)
+    .max(10485760) // Máximo 10MB en base64 (aprox. 7.5MB archivo original)
     .required()
     .messages({
       'string.empty': 'La imagen en base64 es requerida',
+      'string.max': 'La imagen es demasiado grande (máximo 10MB en base64)',
       'string.pattern.base': 'La imagen debe estar en formato base64 válido (data:image/...;base64,...)'
     }),
   
@@ -81,9 +83,11 @@ const updatePublicacionSchema = Joi.object({
   
   imagenAsociada: Joi.string()
     .pattern(/^data:image\/(jpeg|jpg|png|gif|bmp|webp);base64,/)
+    .max(10485760) // Máximo 10MB en base64 (aprox. 7.5MB archivo original)
     .required()
     .messages({
       'string.empty': 'La imagen en base64 es requerida',
+      'string.max': 'La imagen es demasiado grande (máximo 10MB en base64)',
       'string.pattern.base': 'La imagen debe estar en formato base64 válido (data:image/...;base64,...)'
     }),
   

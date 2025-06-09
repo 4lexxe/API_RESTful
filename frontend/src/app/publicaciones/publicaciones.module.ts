@@ -4,11 +4,10 @@ import { RouterModule } from '@angular/router';
 import { PublicacionesComponent } from './publicaciones.component';
 
 @NgModule({
-  declarations: [
-    PublicacionesComponent
-  ],
+  declarations: [],
   imports: [
     CommonModule,
+    PublicacionesComponent,
     RouterModule.forChild([
       { path: '', component: PublicacionesComponent }
     ])

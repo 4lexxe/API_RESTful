@@ -86,10 +86,19 @@ router.get('/', async (req, res) => {
     
     // Buscar publicaciones con filtros y paginación, incluyendo datos del empleado
     const publicaciones = await Publicacion.find(filter)
-      .populate('empleado', 'nombre apellido email dni') // Incluir datos del empleado
-      .sort({ createdAt: -1 }) // Más recientes primero
+      .populate('empleado', 'nombre apellido email dni puesto')
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum);
+    
+    // Debug: Log para verificar population
+    console.log('📋 Publicaciones encontradas:', publicaciones.length);
+    if (publicaciones.length > 0) {
+      console.log('🔍 Primera publicación - empleado populate:', {
+        empleadoId: publicaciones[0].empleado._id || publicaciones[0].empleado,
+        empleadoData: publicaciones[0].empleado
+      });
+    }
     
     // Contar total para paginación
     const total = await Publicacion.countDocuments(filter);
@@ -108,6 +117,42 @@ router.get('/', async (req, res) => {
     });
     
   } catch (error) {
+    console.error('❌ Error en GET /publicaciones:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
+    });
+  }
+});
+
+//-------------------------
+// GET /api/publicaciones/:id - Obtener UNA publicación por ID
+//-------------------------
+router.get('/:id', async (req, res) => {
+  try {
+    const publicacion = await Publicacion.findById(req.params.id)
+      .populate('empleado', 'nombre apellido puesto email');
+    
+    if (!publicacion) {
+      return res.status(404).json({
+        error: 'Publicación no encontrada',
+        message: 'No existe una publicación con el ID proporcionado'
+      });
+    }
+    
+    res.json({
+      message: 'Publicación encontrada exitosamente',
+      publicacion
+    });
+    
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        error: 'ID inválido',
+        message: 'El ID de publicación proporcionado no es válido'
+      });
+    }
+    
     res.status(500).json({
       error: 'Error interno del servidor',
       message: error.message

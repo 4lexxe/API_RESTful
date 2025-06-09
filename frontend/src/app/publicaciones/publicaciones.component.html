@@ -1,0 +1,345 @@
+<div class="main-container publicaciones-container">
+  <!-- PRIMER CONTENEDOR: Formulario de creación -->
+  <div class="card main-card">
+    <h1 class="title">Registro de Publicaciones</h1>
+    <p>Formulario para crear nuevas publicaciones asociadas a empleados.</p>
+
+    <div class="black-border-container compact">
+      <h3 class="form-section-title">
+        <i class="bi bi-file-earmark-plus me-2"></i>
+        Crear Nueva Publicación
+      </h3>
+
+      <form (ngSubmit)="crearPublicacion()" #publicacionForm="ngForm">
+        <div class="grid-2">
+          <div class="input-group">
+            <label class="input-label">Título</label>
+            <input
+              type="text"
+              class="form-input"
+              [(ngModel)]="nuevaPublicacion.titulo"
+              name="titulo"
+              required
+              minlength="5"
+              maxlength="200"
+              placeholder="Ingrese el título de la publicación"
+              #titulo="ngModel">
+            <div *ngIf="titulo.invalid && titulo.touched" class="input-error">
+              El título es requerido (5-200 caracteres)
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Empleado Responsable</label>
+            <select
+              class="form-input"
+              [(ngModel)]="nuevaPublicacion.empleado"
+              name="empleado"
+              required
+              #empleado="ngModel">
+              <option value="">Seleccione un empleado</option>
+              <option *ngFor="let empleado of empleados" [value]="empleado._id">
+                {{ empleado.nombre }} {{ empleado.apellido }} - {{ empleado.puesto }}
+              </option>
+            </select>
+            <div *ngIf="empleado.invalid && empleado.touched" class="input-error">
+              Debe seleccionar un empleado responsable
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Fecha de Publicación</label>
+            <input
+              type="date"
+              class="form-input"
+              [(ngModel)]="nuevaPublicacion.fechaPublicacion"
+              name="fechaPublicacion"
+              required
+              #fechaPublicacion="ngModel">
+            <div *ngIf="fechaPublicacion.invalid && fechaPublicacion.touched" class="input-error">
+              La fecha de publicación es requerida
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Imagen (máx. 2MB)</label>
+            <input
+              type="file"
+              class="form-input"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              (change)="onImagenChange($event)"
+              #imagenInput>
+            <div class="file-info">
+              <small class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Formatos permitidos: JPEG, PNG, GIF, WebP. Tamaño máximo: 2MB. Se redimensionará automáticamente.
+              </small>
+            </div>
+            <div *ngIf="!nuevaPublicacion.imagenAsociada && imagenInput.value" class="input-error">
+              La imagen es requerida
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Contenido</label>
+          <textarea
+            class="form-input textarea-large"
+            [(ngModel)]="nuevaPublicacion.contenido"
+            name="contenido"
+            required
+            minlength="10"
+            maxlength="10000"
+            placeholder="Escriba el contenido de la publicación..."
+            rows="6"
+            #contenido="ngModel"></textarea>
+          <div *ngIf="contenido.invalid && contenido.touched" class="input-error">
+            El contenido es requerido (10-10000 caracteres)
+          </div>
+        </div>
+
+        <!-- Vista previa de imagen -->
+        <div *ngIf="imagenPreview" class="image-preview">
+          <label class="input-label">Vista previa de la imagen:</label>
+          <img [src]="imagenPreview" alt="Vista previa" class="preview-img">
+        </div>
+
+        <div class="checkbox-group compact">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              class="checkbox-input"
+              [(ngModel)]="nuevaPublicacion.vigente"
+              name="vigente">
+            <span>Publicación Vigente</span>
+          </label>
+        </div>
+
+        <div class="form-actions mt-1">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="publicacionForm.invalid || cargando || !nuevaPublicacion.imagenAsociada">
+            <i class="bi bi-file-earmark-plus-fill me-2"></i>
+            {{ getSubmitButtonText() }}
+          </button>
+
+          <button
+            type="button"
+            class="btn"
+            (click)="limpiarFormulario()">
+            <i class="bi bi-arrow-clockwise me-2"></i>
+            Limpiar
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Mensajes de estado -->
+    <div *ngIf="mensaje" class="alert alert-success">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      {{ mensaje }}
+    </div>
+
+    <div *ngIf="error" class="alert alert-error">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {{ error }}
+    </div>
+  </div>
+
+  <!-- SEPARACIÓN VISUAL entre contenedores -->
+  <div class="container-separator"></div>
+
+  <!-- SEGUNDO CONTENEDOR: Listado y filtros -->
+  <div class="card main-card">
+    <h1 class="title">Gestión de Publicaciones</h1>
+    <p>Consulta, filtrado y visualización de publicaciones registradas.</p>
+
+    <!-- Sección de filtros -->
+    <div class="black-border-container compact">
+      <h3 class="form-section-title">
+        <i class="bi bi-funnel me-2"></i>
+        Filtros y Búsquedas
+      </h3>
+
+      <div class="filter-section">
+        <div class="filter-group">
+          <label class="input-label">Filtrar por Empleado</label>
+          <div class="input-with-button">
+            <select
+              class="form-input"
+              [(ngModel)]="empleadoSeleccionadoFiltro"
+              [disabled]="cargando">
+              <option value="">Seleccione un empleado</option>
+              <option *ngFor="let empleado of empleados" [value]="empleado._id">
+                {{ empleado.nombre }} {{ empleado.apellido }}
+              </option>
+            </select>
+            <button
+              class="btn btn-info btn-sm"
+              (click)="filtrarPorEmpleado()"
+              [disabled]="cargando || !empleadoSeleccionadoFiltro">
+              <i class="bi bi-person-search me-1"></i>
+              {{ getLoadButtonText('empleado') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de acción principales -->
+      <div class="form-actions">
+        <button
+          class="btn btn-success me-2"
+          (click)="cargarPublicaciones()"
+          [disabled]="cargando">
+          <i class="bi bi-arrow-repeat me-2"></i>
+          {{ getLoadButtonText('todas') }}
+        </button>
+
+        <button
+          class="btn btn-primary me-2"
+          (click)="cargarPublicacionesVigentes()"
+          [disabled]="cargando"
+          [class.active]="filtroActivo === 'vigentes'">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          {{ getLoadButtonText('vigentes') }}
+        </button>
+
+        <button
+          class="btn btn-secondary"
+          (click)="limpiarFiltros()"
+          [disabled]="cargando">
+          <i class="bi bi-x-circle me-2"></i>
+          Limpiar Filtros
+        </button>
+      </div>
+    </div>
+
+    <!-- Indicador de filtro aplicado -->
+    <div *ngIf="filtroActivo !== 'todas'" class="filter-indicator">
+      <i class="bi bi-funnel-fill me-2"></i>
+      <span>Mostrando: <strong>{{ getFiltroTexto() }}</strong></span>
+      <button class="btn btn-link btn-sm ms-2" (click)="limpiarFiltros()">
+        <i class="bi bi-x-circle me-1"></i>
+        Quitar filtro
+      </button>
+    </div>
+
+    <!-- Lista de publicaciones -->
+    <div *ngIf="publicaciones.length > 0" class="mt-2 black-border-container compact">
+      <h3 class="section-title">
+        <i class="bi bi-file-earmark-text-fill me-2"></i>
+        {{ getTituloListado() }} ({{ publicaciones.length }})
+      </h3>
+      <div class="publicaciones-grid">
+        <div *ngFor="let publicacion of publicaciones" class="publicacion-card compact">
+
+          <div class="publicacion-header">
+            <h4 class="publicacion-title">{{ publicacion.titulo }}</h4>
+            <div class="status-info">
+              <span class="status-badge" [class]="publicacion.vigente ? 'status-active' : 'status-inactive'">
+                <i class="bi bi-circle-fill me-1" [class]="publicacion.vigente ? 'text-success' : 'text-danger'"></i>
+                {{ publicacion.vigente ? 'Vigente' : 'No Vigente' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="publicacion-image">
+            <img [src]="publicacion.imagenAsociada" [alt]="publicacion.titulo" class="publication-img">
+          </div>
+
+          <div class="publicacion-details">
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="bi bi-person-badge me-1"></i>
+                Empleado:
+              </span>
+              <span class="detail-value">
+                {{ obtenerNombreEmpleado(publicacion.empleado) }}
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="bi bi-calendar me-1"></i>
+                Fecha:
+              </span>
+              <span class="detail-value">{{ formatearFecha(publicacion.fechaPublicacion) }}</span>
+            </div>
+          </div>
+
+          <div class="publicacion-content">
+            <p class="content-preview">{{ publicacion.contenido.substring(0, 150) }}{{ publicacion.contenido.length > 150 ? '...' : '' }}</p>
+          </div>
+
+          <!-- Botón de acción -->
+          <div class="publicacion-actions">
+            <button
+              class="btn btn-info btn-sm"
+              (click)="verDetallePublicacion(publicacion._id!)"
+              [disabled]="cargando"
+              title="Ver detalles completos">
+              <i class="bi bi-eye-fill me-1"></i>
+              Ver Completa
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div *ngIf="publicaciones.length === 0 && !cargando" class="empty-state mt-2">
+      <i class="bi bi-file-earmark-x display-1 text-muted mb-3"></i>
+      <p>{{ getMensajeVacio() }}</p>
+    </div>
+  </div>
+
+  <!-- Modal de detalles de la publicación -->
+  <div *ngIf="mostrandoDetalle && publicacionSeleccionada" class="modal-overlay" (click)="cerrarDetalle()">
+    <div class="modal-content publication-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="bi bi-file-earmark-text me-2"></i>
+          Detalle de Publicación
+        </h3>
+        <button class="btn btn-sm btn-close" (click)="cerrarDetalle()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="publication-detail-card">
+          <div class="detail-header">
+            <h4>{{ publicacionSeleccionada.titulo }}</h4>
+            <span class="status-badge" [class]="publicacionSeleccionada.vigente ? 'status-active' : 'status-inactive'">
+              {{ publicacionSeleccionada.vigente ? 'Vigente' : 'No Vigente' }}
+            </span>
+          </div>
+
+          <div class="publication-image-full">
+            <img [src]="publicacionSeleccionada.imagenAsociada" [alt]="publicacionSeleccionada.titulo" class="full-img">
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Empleado Responsable:</label>
+              <span>{{ obtenerNombreEmpleado(publicacionSeleccionada.empleado) }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Fecha de Publicación:</label>
+              <span>{{ formatearFecha(publicacionSeleccionada.fechaPublicacion) }}</span>
+            </div>
+            <div class="detail-item" *ngIf="publicacionSeleccionada.createdAt">
+              <label>Creado el:</label>
+              <span>{{ formatearFecha(publicacionSeleccionada.createdAt) }}</span>
+            </div>
+          </div>
+
+          <div class="content-section">
+            <label class="content-label">Contenido:</label>
+            <div class="content-text">{{ publicacionSeleccionada.contenido }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -9,16 +9,22 @@ const router = express.Router();
 //-------------------------
 router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 10, search } = req.query;
+    const { search, activo, page = 1, limit = 10 } = req.query;
     
-    // Crear filtro de búsqueda opcional
+    // Crear filtro opcional
     const filter = {};
+    if (activo !== undefined) {
+      filter.activo = activo === 'true';
+    }
+    
+    // Si hay búsqueda, agregar filtros de texto
     if (search) {
+      const searchRegex = new RegExp(search, 'i');
       filter.$or = [
-        { nombre: { $regex: search, $options: 'i' } },
-        { apellido: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { dni: { $regex: search, $options: 'i' } }
+        { nombre: searchRegex },
+        { apellido: searchRegex },
+        { email: searchRegex },
+        { dni: searchRegex }
       ];
     }
     
@@ -29,7 +35,7 @@ router.get('/', async (req, res) => {
     
     // Buscar empleados con filtros y paginación
     const empleados = await Empleado.find(filter)
-      .sort({ apellido: 1, nombre: 1 }) // Ordenar por apellido y nombre
+      .sort({ apellido: 1, nombre: 1 })
       .skip(skip)
       .limit(limitNum);
     
@@ -67,7 +73,7 @@ router.get('/:id', async (req, res) => {
     if (!empleado) {
       return res.status(404).json({
         error: 'Empleado no encontrado',
-        message: `No existe un empleado con el ID ${req.params.id}`
+        message: 'No existe un empleado con el ID proporcionado'
       });
     }
     
@@ -80,7 +86,7 @@ router.get('/:id', async (req, res) => {
     if (error.name === 'CastError') {
       return res.status(400).json({
         error: 'ID inválido',
-        message: 'El ID proporcionado no es válido'
+        message: 'El ID de empleado proporcionado no es válido'
       });
     }
     
@@ -116,20 +122,18 @@ router.post('/', async (req, res) => {
     });
     
   } catch (error) {
-    if (error.code === 11000) {
-      // Error de duplicado
-      const campo = Object.keys(error.keyPattern)[0];
-      const valor = error.keyValue[campo];
-      return res.status(409).json({
-        error: `${campo.toUpperCase()} duplicado`,
-        message: `Ya existe un empleado con el ${campo} ${valor}`
-      });
-    }
-    
     if (error.name === 'ValidationError') {
       return res.status(400).json({
         error: 'Datos inválidos',
         message: Object.values(error.errors)[0].message
+      });
+    }
+    
+    if (error.code === 11000) {
+      const campo = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        error: 'Datos duplicados',
+        message: `Ya existe un empleado con este ${campo}`
       });
     }
     

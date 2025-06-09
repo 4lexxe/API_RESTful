@@ -4,8 +4,7 @@ import {
   Transaccion,
   TransaccionCreateRequest,
   TransaccionResponse,
-  TransaccionesListResponse,
-  TransaccionesClienteResponse
+  TransaccionesListResponse
 } from '../models/transaccion.interface';
 
 @Injectable({
@@ -56,59 +55,26 @@ export class TransaccionesService {
   }
 
   //-------------------------
-  // READ BY CLIENT - GET /api/transacciones/cliente/:email - Histórico por cliente
+  // Métodos de búsqueda específica
   //-------------------------
-  async obtenerTransaccionesPorCliente(
-    email: string,
-    params?: {
-      page?: number;
-      limit?: number;
-    }
-  ): Promise<TransaccionesClienteResponse> {
+  async buscarPorEmail(email: string): Promise<TransaccionesListResponse> {
     try {
-      const response = await apiClient.get<TransaccionesClienteResponse>(
-        `${this.endpoint}/cliente/${email}`,
-        { params }
-      );
+      const response = await apiClient.get<TransaccionesListResponse>(`${this.endpoint}/cliente/${email}`);
       return response.data;
     } catch (error: any) {
-      console.error('Error obteniendo transacciones por cliente:', error);
+      console.error('Error buscando por email:', error);
       throw this.handleError(error);
     }
-  }
-
-  //-------------------------
-  // READ BY LANGUAGES - GET /api/transacciones/idiomas/:origen/:destino - Por idiomas
-  //-------------------------
-  async obtenerTransaccionesPorIdiomas(
-    idiomaOrigen: string,
-    idiomaDestino: string,
-    params?: {
-      page?: number;
-      limit?: number;
-    }
-  ): Promise<TransaccionesListResponse> {
-    try {
-      const response = await apiClient.get<TransaccionesListResponse>(
-        `${this.endpoint}/idiomas/${idiomaOrigen}/${idiomaDestino}`,
-        { params }
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error('Error obteniendo transacciones por idiomas:', error);
-      throw this.handleError(error);
-    }
-  }
-
-  //-------------------------
-  // Métodos de utilidad para filtrado
-  //-------------------------
-  async buscarPorEmail(email: string): Promise<TransaccionesClienteResponse> {
-    return this.obtenerTransaccionesPorCliente(email);
   }
 
   async buscarPorIdiomas(origen: string, destino: string): Promise<TransaccionesListResponse> {
-    return this.obtenerTransaccionesPorIdiomas(origen, destino);
+    try {
+      const response = await apiClient.get<TransaccionesListResponse>(`${this.endpoint}/idiomas/${origen}/${destino}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error buscando por idiomas:', error);
+      throw this.handleError(error);
+    }
   }
 
   //-------------------------
